@@ -1,0 +1,181 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    autopilot.gke.io/resource-adjustment: '{"input":{"containers":[{"requests":{"cpu":"300m","memory":"512Mi"},"name":"moodle"}]},"output":{"containers":[{"limits":{"cpu":"500m","ephemeral-storage":"1Gi","memory":"512Mi"},"requests":{"cpu":"500m","ephemeral-storage":"1Gi","memory":"512Mi"},"name":"moodle"}]},"modified":true}'
+    deployment.kubernetes.io/revision: "1"
+    meta.helm.sh/release-name: moodle
+    meta.helm.sh/release-namespace: default
+  creationTimestamp: "2022-09-04T11:48:49Z"
+  generation: 1
+  labels:
+    app.kubernetes.io/instance: moodle
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: moodle
+    helm.sh/chart: moodle-14.2.1
+  name: moodle
+  namespace: default
+  resourceVersion: "1408408"
+  uid: bb3a2b5f-96c6-41e9-a1d4-668ce2522621
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: moodle
+      app.kubernetes.io/name: moodle
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      annotations:
+        prometheus.io/port: "9117"
+        prometheus.io/scrape: "true"
+      creationTimestamp: null
+      labels:
+        app.kubernetes.io/instance: moodle
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/name: moodle
+        helm.sh/chart: moodle-14.2.1
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - podAffinityTerm:
+              labelSelector:
+                matchLabels:
+                  app.kubernetes.io/instance: moodle
+                  app.kubernetes.io/name: moodle
+              namespaces:
+              - default
+              topologyKey: kubernetes.io/hostname
+            weight: 1
+      containers:
+      - env:
+        - name: BITNAMI_DEBUG
+          value: "false"
+        - name: ALLOW_EMPTY_PASSWORD
+          value: "yes"
+        - name: APACHE_HTTP_PORT_NUMBER
+          value: "8080"
+        - name: APACHE_HTTPS_PORT_NUMBER
+          value: "8443"
+        - name: MOODLE_DATABASE_TYPE
+          value: mariadb
+        - name: MOODLE_DATABASE_HOST
+          value: moodle-mariadb
+        - name: MOODLE_DATABASE_PORT_NUMBER
+          value: "3306"
+        - name: MOODLE_DATABASE_NAME
+          value: bitnami_moodle
+        - name: MOODLE_DATABASE_USER
+          value: bn_moodle
+        - name: MOODLE_DATABASE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: mariadb-password
+              name: moodle-mariadb
+        - name: MOODLE_SKIP_BOOTSTRAP
+          value: "no"
+        - name: MOODLE_USERNAME
+          value: user
+        - name: MOODLE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: moodle-password
+              name: moodle
+        - name: MOODLE_EMAIL
+          value: user@example.com
+        image: docker.io/bitnami/moodle:4.0.3-debian-11-r0
+        imagePullPolicy: IfNotPresent
+        livenessProbe:
+          failureThreshold: 6
+          httpGet:
+            path: /login/index.php
+            port: http
+            scheme: HTTP
+          initialDelaySeconds: 600
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 5
+        name: moodle
+        ports:
+        - containerPort: 8080
+          name: http
+          protocol: TCP
+        - containerPort: 8443
+          name: https
+          protocol: TCP
+        readinessProbe:
+          failureThreshold: 6
+          httpGet:
+            path: /login/index.php
+            port: http
+            scheme: HTTP
+          initialDelaySeconds: 30
+          periodSeconds: 5
+          successThreshold: 1
+          timeoutSeconds: 3
+        resources:
+          limits:
+            cpu: 500m
+            ephemeral-storage: 1Gi
+            memory: 512Mi
+          requests:
+            cpu: 500m
+            ephemeral-storage: 1Gi
+            memory: 512Mi
+        securityContext:
+          capabilities:
+            drop:
+            - NET_RAW
+          runAsNonRoot: true
+          runAsUser: 1001
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /bitnami/moodle
+          name: moodle-data
+          subPath: moodle
+        - mountPath: /bitnami/moodledata
+          name: moodle-data
+          subPath: moodledata
+      dnsPolicy: ClusterFirst
+      hostAliases:
+      - hostnames:
+        - status.localhost
+        ip: 127.0.0.1
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext:
+        fsGroup: 1001
+        seccompProfile:
+          type: RuntimeDefault
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - name: moodle-data
+        persistentVolumeClaim:
+          claimName: moodle-moodle
+status:
+  availableReplicas: 1
+  conditions:
+  - lastTransitionTime: "2022-09-04T11:53:20Z"
+    lastUpdateTime: "2022-09-04T11:53:20Z"
+    message: Deployment has minimum availability.
+    reason: MinimumReplicasAvailable
+    status: "True"
+    type: Available
+  - lastTransitionTime: "2022-09-04T11:48:50Z"
+    lastUpdateTime: "2022-09-04T11:53:20Z"
+    message: ReplicaSet "moodle-98cbdbd5f" has successfully progressed.
+    reason: NewReplicaSetAvailable
+    status: "True"
+    type: Progressing
+  observedGeneration: 1
+  readyReplicas: 1
+  replicas: 1
+  updatedReplicas: 1

@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: moodle-postgres
+  name: moodle-postgres
+  namespace: moodle
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: moodle-postgres
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: moodle-postgres
+    spec:
+      containers:
+      - image: bitnami/moodle
+        name: moodle
+        env:
+        - name: ALLOW_EMPTY_PASSWORD
+          value: "yes"
+        - name: MOODLE_USERNAME
+          value: "admin"
+        - name: MOODLE_PASSWORD
+          value: "moodle"
+        - name: MOODLE_DATABASE_TYPE
+          value: "pgsql"
+        - name: MOODLE_DATABASE_HOST
+          value: "postgres-moodle-primary"
+        - name: MOODLE_DATABASE_PORT_NUMBER
+          value: "5432"
+        - name: MOODLE_DATABASE_NAME
+          value: "postgres-moodle"
+        - name: MOODLE_DATABASE_USER
+          value: "postgres-moodle"
+        - name: MOODLE_DATABASE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: postgres-moodle-pguser-postgres-moodle
+              key: password
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: moodle-postgres
+  name: moodle-postgres
+  namespace: moodle
+spec:
+  ports:
+  - name: port-1
+    port: 80
+    protocol: TCP
+    targetPort: 8080
+  - name: port-2
+    port: 443
+    protocol: TCP
+    targetPort: 8443
+  selector:
+    app: moodle-postgres
+  type: LoadBalancer
