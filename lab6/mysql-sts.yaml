@@ -68,13 +68,13 @@ spec:
         image: mysql:5.7-debian
         env:
         - name: MYSQL_ALLOW_EMPTY_PASSWORD
-           value: "1"
+          value: "1"
         - name: MYSQL_DATABASE
-           value: "wordpress"
+          value: "wordpress"
         - name:  MYSQL_USER
-           value: "wordpress"
+          value: "wordpress"
         - name: MYSQL_PASSWORD
-           value: "wordpress" 
+          value: "wordpress" 
         ports:
         - name: mysql
           containerPort: 3306
